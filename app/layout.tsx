@@ -4,11 +4,10 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'EdgeOne Pages AI: Utilize DeepSeek 671B for Free on the Edge.',
-  description:
-    'EdgeOne Pages AI offers free access to DeepSeek 671B for enhanced edge computing capabilities.',
-};
+export const metadata = {
+  title: 'enenai',
+  description: 'AI 助手 - 智能对话平台',
+}
 
 export default function RootLayout({
   children,
@@ -16,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh">
       <body className={inter.className}>{children}</body>
     </html>
   );
