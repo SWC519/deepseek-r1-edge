@@ -208,17 +208,27 @@ export default function NewAIInterface() {
                           p: ({ children }) => (
                             <p className="mb-2 last:mb-0">{children}</p>
                           ),
-                          code: ({ node, inline, className, children, ...props }) => (
-                            <code
-                              className={`${
-                                inline
-                                  ? 'bg-gray-100 px-1 py-0.5 rounded text-sm'
-                                  : 'block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto'
-                              }`}
+                          code: ({ node, className, children, ...props }) => {
+                            const isInline = !className?.includes('language-');
+                            return (
+                              <code
+                                className={`${
+                                  isInline
+                                    ? 'bg-gray-100 px-1 py-0.5 rounded text-sm'
+                                    : 'block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto'
+                                }`}
+                                {...props}
+                              >
+                                {children}
+                              </code>
+                            );
+                          },
+                          a: ({ node, ...props }) => (
+                            <a
                               {...props}
-                            >
-                              {children}
-                            </code>
+                              target="_blank"
+                              className="text-blue-600 hover:text-blue-800"
+                            />
                           ),
                         }}
                       >
