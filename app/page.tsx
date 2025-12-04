@@ -10,11 +10,23 @@ interface Message {
   content: string;
 }
 
+// 模型配置
+const MODEL_OPTIONS = [
+  { id: '@tx/deepseek-ai/deepseek-r1-distill-qwen-32b', name: 'DeepSeek R1 32B' },
+  { id: '@tx/deepseek-ai/deepseek-r1-0528', name: 'DeepSeek R1 0528' },
+  { id: '@tx/deepseek-ai/deepseek-v3-0324', name: 'DeepSeek V3 0324' },
+  { id: '@hf/meta-llama/meta-llama-3.1-8b-instruct', name: 'LLaMA 3.1 8B' },
+  { id: '@hf/qwen/qwen2.5-7b-instruct', name: 'Qwen 2.5 7B' },
+  { id: '@hf/google/gemma-2-9b-it', name: 'Gemma 2 9B' },
+];
+
 export default function NewAIInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(MODEL_OPTIONS[2].id); // 默认使用 DeepSeek V3
+  const [showModelSelector, setShowModelSelector] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -30,7 +42,6 @@ export default function NewAIInterface() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // 如果正在流式传输，停止当前响应
     if (isStreaming) {
       handleStop();
       return;
@@ -41,10 +52,7 @@ export default function NewAIInterface() {
     setIsLoading(true);
     setIsStreaming(true);
 
-    // 添加用户消息
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    
-    // 添加空的助手消息
     setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
     try {
@@ -68,7 +76,7 @@ export default function NewAIInterface() {
             { role: 'user', content: userMessage }
           ],
           network: false,
-          model: '@tx/deepseek-ai/deepseek-v3-0324'
+          model: selectedModel
         }),
         signal: abortControllerRef.current.signal
       });
@@ -141,18 +149,68 @@ export default function NewAIInterface() {
     "写一段关于人工智能的简短介绍",
     "解释什么是机器学习",
     "帮我写一封专业的商务邮件",
-    "推荐一些学习编程的方法"
+    "推荐一些学习编程的方法",
+    "如何优化网站性能",
+    "解释一下区块链技术"
   ];
 
+  const currentModelName = MODEL_OPTIONS.find(m => m.id === selectedModel)?.name || 'Unknown';
+
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* 头部 */}
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* 头部 - 标题修改为 enenai */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-800">AI 助手</h1>
-            <div className="text-sm text-gray-500">
-              基于 DeepSeek 大模型
+            <h1 className="text-2xl font-bold text-gray-800">enenai</h1>
+            
+            {/* 模型选择器 */}
+            <div className="relative">
+              <button
+                onClick={() => setShowModelSelector(!showModelSelector)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                disabled={isLoading}
+              >
+                <span className="text-sm font-medium">{currentModelName}</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${showModelSelector ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {/* 模型下拉菜单 */}
+              {showModelSelector && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="p-2">
+                    {MODEL_OPTIONS.map((model) => (
+                      <button
+                        key={model.id}
+                        onClick={() => {
+                          setSelectedModel(model.id);
+                          setShowModelSelector(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                          selectedModel === model.id
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="font-medium">{model.name}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {model.id.includes('deepseek') ? 'DeepSeek 系列' : 
+                           model.id.includes('llama') ? 'Meta 系列' :
+                           model.id.includes('qwen') ? '阿里通义系列' :
+                           'Google 系列'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -165,10 +223,10 @@ export default function NewAIInterface() {
             <div className="text-center mt-20">
               <div className="text-6xl mb-4">🤖</div>
               <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-                欢迎使用 AI 助手
+                欢迎使用 enenai
               </h2>
               <p className="text-gray-500 mb-8">
-                我可以帮助您回答问题、创作内容、编写代码等
+                当前模型：{currentModelName} • 支持多轮对话 • 实时流式输出
               </p>
               
               {/* 快速提示词 */}
@@ -253,7 +311,7 @@ export default function NewAIInterface() {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="输入您的问题..."
+              placeholder={`与 ${currentModelName} 对话...`}
               disabled={isLoading}
               className="flex-1 p-3 border border-gray-300 rounded-lg resize-none 
                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
@@ -279,7 +337,7 @@ export default function NewAIInterface() {
           </form>
           
           <div className="mt-2 text-xs text-gray-500 text-center">
-            按 Enter 发送消息，Shift + Enter 换行
+            按 Enter 发送消息，Shift + Enter 换行 • 当前模型：{currentModelName}
           </div>
         </div>
       </footer>
