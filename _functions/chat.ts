@@ -1,15 +1,14 @@
-import type { RequestContext } from '@edgeone/pages';
-
-export async function onRequestPost(ctx: RequestContext) {
-  // 1. 透传原站 SSE
+// 纯 JavaScript 版本，无外部依赖
+export async function onRequestPost(ctx) {
+  // 1. 把原始请求透传给上游 SSE 接口
   const upstream = await fetch('https://ai.enencloud.top/v1/chat/completions', {
     method: 'POST',
     headers: ctx.请求.headers,
-    body:   ctx.请求.body,
+    body: ctx.请求.body,
   });
 
   // 2. 逐行读取 SSE，拼 content
-  const reader = upstream.body!.getReader();
+  const reader = upstream.body.getReader();
   const decoder = new TextDecoder();
   let content = '';
   while (true) {
@@ -34,7 +33,7 @@ export async function onRequestPost(ctx: RequestContext) {
       id: crypto.randomUUID(),
       object: 'chat.completion',
       created: Date.now(),
-      model: upstream.headers.get('x-model') ?? '@tx/deepseek-ai/deepseek-v3-0324',
+      model: upstream.headers.get('x-model') || '@tx/deepseek-ai/deepseek-v3-0324',
       choices: [
         {
           index: 0,
@@ -42,15 +41,8 @@ export async function onRequestPost(ctx: RequestContext) {
           finish_reason: 'stop',
         },
       ],
-      usage: {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0,
-      },
+      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
     }),
-    {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    }
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 }
