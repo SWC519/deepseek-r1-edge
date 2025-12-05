@@ -1,13 +1,11 @@
-// 纯 JavaScript 版本，无外部依赖
+// 纯 JS，无类型
 export async function onRequestPost(ctx) {
-  // 1. 把原始请求透传给上游 SSE 接口
   const upstream = await fetch('https://ai.enencloud.top/v1/chat/completions', {
     method: 'POST',
     headers: ctx.请求.headers,
     body: ctx.请求.body,
   });
 
-  // 2. 逐行读取 SSE，拼 content
   const reader = upstream.body.getReader();
   const decoder = new TextDecoder();
   let content = '';
@@ -27,7 +25,6 @@ export async function onRequestPost(ctx) {
     }
   }
 
-  // 3. 返回标准 OpenAI 非流式 JSON
   return new Response(
     JSON.stringify({
       id: crypto.randomUUID(),
@@ -41,7 +38,11 @@ export async function onRequestPost(ctx) {
           finish_reason: 'stop',
         },
       ],
-      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
+      usage: {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
+      },
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
