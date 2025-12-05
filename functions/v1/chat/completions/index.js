@@ -1,21 +1,16 @@
-// functions/v1/chat/completions/index.ts
-import type { RequestContext } from '@edgeone/pages';
-
-export async function onRequest(ctx: RequestContext) {
-  // 只处理 POST
+// functions/v1/chat/completions/index.js
+export async function onRequest(ctx) {
   if (ctx.请求.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 });
   }
 
-  // 1. 透传原站 SSE
   const upstream = await fetch('https://ai.enencloud.top/v1/chat/completions', {
     method: 'POST',
     headers: ctx.请求.headers,
     body: ctx.请求.body,
   });
 
-  // 2. 逐行读取 SSE，拼成完整 content
-  const reader = upstream.body!.getReader();
+  const reader = upstream.body.getReader();
   const decoder = new TextDecoder();
   let content = '';
   while (true) {
@@ -34,7 +29,6 @@ export async function onRequest(ctx: RequestContext) {
     }
   }
 
-  // 3. 返回标准 OpenAI 非流式 JSON
   return new Response(
     JSON.stringify({
       id: crypto.randomUUID(),
