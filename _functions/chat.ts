@@ -1,4 +1,4 @@
-// 纯 JS，无类型
+// @ts-nocheck
 export async function onRequestPost(ctx) {
   const upstream = await fetch('https://ai.enencloud.top/v1/chat/completions', {
     method: 'POST',
