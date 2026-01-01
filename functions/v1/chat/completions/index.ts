@@ -171,17 +171,17 @@ function handleOptionsRequest(): Response {
   });
 }
 
-export async function onRequest({ request, env }: any) {
+export async function onRequest({ 请求, env }: any) {
   // Handle preflight requests
-  if (request.method === 'OPTIONS') {
+  if (请求.method === 'OPTIONS') {
     return handleOptionsRequest();
   }
 
   // Remove encoding header to avoid compression issues
-  request.headers.delete('accept-encoding');
+  请求.headers.delete('accept-encoding');
 
   try {
-    const json = await request.clone().json();
+    const json = await 请求.clone().json();
     const parseResult = messageSchema.safeParse(json);
 
     if (!parseResult.success) {
@@ -218,6 +218,7 @@ export async function onRequest({ request, env }: any) {
         '@tx/deepseek-ai/deepseek-r1-distill-qwen-32b',
         '@tx/deepseek-ai/deepseek-r1-0528',
         '@tx/deepseek-ai/deepseek-v3-0324',
+        '@tx/deepseek-ai/deepseek-v3.2',
       ];
 
       // Use the model parameter, fallback to default if not provided
